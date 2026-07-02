@@ -101,6 +101,169 @@ function renderYouTubeVerticalVideos() {
   }).join('');
 }
 
+
+
+// Subscribe popup banner system.
+// Uses static-safe hardcoded image paths from /dev/assets/subscribe-banners/.
+// Timers run at 15 seconds, 3 minutes, and 8 minutes after arrival.
+// All clicks route to /dev/mail-list/.
+function getSubscribePopupDevBasePath() {
+  const devPathMatch = window.location.pathname.match(/^(.*?\/dev)(?:\/|$)/);
+  return devPathMatch ? devPathMatch[1] : '/dev';
+}
+
+const subscribePopupDevBasePath = getSubscribePopupDevBasePath();
+const subscribeBannerImages = [
+  `${subscribePopupDevBasePath}/assets/subscribe-banners/katchafire_subscribe_banner_01.jpg`,
+  `${subscribePopupDevBasePath}/assets/subscribe-banners/katchafire_subscribe_banner_02.jpg`,
+  `${subscribePopupDevBasePath}/assets/subscribe-banners/katchafire_subscribe_banner_03.jpg`,
+  `${subscribePopupDevBasePath}/assets/subscribe-banners/katchafire_subscribe_banner_04.jpg`,
+  `${subscribePopupDevBasePath}/assets/subscribe-banners/katchafire_subscribe_banner_05.jpg`,
+  `${subscribePopupDevBasePath}/assets/subscribe-banners/katchafire_subscribe_banner_06.jpg`,
+  `${subscribePopupDevBasePath}/assets/subscribe-banners/katchafire_subscribe_banner_07.jpg`,
+  `${subscribePopupDevBasePath}/assets/subscribe-banners/katchafire_subscribe_banner_08.jpg`,
+  `${subscribePopupDevBasePath}/assets/subscribe-banners/katchafire_subscribe_banner_09.jpg`,
+  `${subscribePopupDevBasePath}/assets/subscribe-banners/katchafire_subscribe_banner_10.jpg`
+];
+
+const subscribePopupSchedule = [15000, 180000, 480000];
+const subscribePopupMailListPath = `${subscribePopupDevBasePath}/mail-list/`;
+const subscribePopupArrivalKey = 'katchafireSubscribePopupArrival';
+const subscribePopupShownScheduleKey = 'katchafireSubscribePopupShownSchedule';
+const subscribePopupLastBannerKey = 'katchafireSubscribePopupLastBanner';
+let subscribePopupEscapeHandler = null;
+
+function isSubscribePopupMailListPage() {
+  const normalizedPath = window.location.pathname.replace(/index\.html$/, '');
+  return normalizedPath === subscribePopupMailListPath;
+}
+
+function getSubscribePopupSessionArray(key) {
+  try {
+    const stored = JSON.parse(sessionStorage.getItem(key) || '[]');
+    return Array.isArray(stored) ? stored : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function setSubscribePopupSessionArray(key, value) {
+  try {
+    sessionStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    // Ignore sessionStorage write errors so the site remains usable in restricted browsers.
+  }
+}
+
+function getSubscribePopupArrival() {
+  const now = Date.now();
+
+  try {
+    const storedArrival = Number(sessionStorage.getItem(subscribePopupArrivalKey));
+    if (Number.isFinite(storedArrival) && storedArrival > 0) return storedArrival;
+    sessionStorage.setItem(subscribePopupArrivalKey, String(now));
+  } catch (error) {
+    return now;
+  }
+
+  return now;
+}
+
+function chooseSubscribeBannerImage() {
+  if (!subscribeBannerImages.length) return '';
+
+  let lastBanner = '';
+  try {
+    lastBanner = sessionStorage.getItem(subscribePopupLastBannerKey) || '';
+  } catch (error) {
+    lastBanner = '';
+  }
+
+  const availableImages = subscribeBannerImages.length > 1
+    ? subscribeBannerImages.filter((imagePath) => imagePath !== lastBanner)
+    : subscribeBannerImages;
+  const selectedImage = availableImages[Math.floor(Math.random() * availableImages.length)];
+
+  try {
+    sessionStorage.setItem(subscribePopupLastBannerKey, selectedImage);
+  } catch (error) {
+    // Ignore sessionStorage write errors so random selection still works.
+  }
+
+  return selectedImage;
+}
+
+function closeSubscribePopup() {
+  const existingPopup = document.querySelector('[data-subscribe-popup]');
+  if (existingPopup) existingPopup.remove();
+
+  if (subscribePopupEscapeHandler) {
+    document.removeEventListener('keydown', subscribePopupEscapeHandler);
+    subscribePopupEscapeHandler = null;
+  }
+}
+
+function renderSubscribePopup() {
+  if (isSubscribePopupMailListPage()) return;
+
+  closeSubscribePopup();
+
+  const bannerPath = chooseSubscribeBannerImage();
+  if (!bannerPath) return;
+
+  const backdrop = document.createElement('div');
+  backdrop.className = 'subscribe-popup-backdrop';
+  backdrop.setAttribute('data-subscribe-popup', '');
+  backdrop.innerHTML = `
+    <div class="subscribe-popup-card" role="dialog" aria-modal="true" aria-label="Subscribe to Katchafire updates">
+      <button class="subscribe-popup-close" type="button" aria-label="Close subscribe popup">×</button>
+      <a class="subscribe-popup-image-link" href="${subscribePopupMailListPath}">
+        <img class="subscribe-popup-image" src="${bannerPath}" alt="Subscribe to Katchafire email list">
+      </a>
+      <div class="subscribe-popup-actions">
+        <a class="subscribe-popup-cta" href="${subscribePopupMailListPath}">Join the Mail List</a>
+      </div>
+    </div>
+  `;
+
+  const closeButton = backdrop.querySelector('.subscribe-popup-close');
+  const card = backdrop.querySelector('.subscribe-popup-card');
+
+  closeButton.addEventListener('click', closeSubscribePopup);
+  backdrop.addEventListener('click', closeSubscribePopup);
+  card.addEventListener('click', (event) => event.stopPropagation());
+
+  subscribePopupEscapeHandler = (event) => {
+    if (event.key === 'Escape') closeSubscribePopup();
+  };
+  document.addEventListener('keydown', subscribePopupEscapeHandler);
+
+  document.body.appendChild(backdrop);
+  closeButton.focus({ preventScroll: true });
+}
+
+function setupSubscribePopupSchedule() {
+  if (isSubscribePopupMailListPage()) return;
+
+  const arrival = getSubscribePopupArrival();
+  const elapsed = Date.now() - arrival;
+  const shownSchedule = getSubscribePopupSessionArray(subscribePopupShownScheduleKey);
+
+  subscribePopupSchedule.forEach((delay, index) => {
+    if (shownSchedule.includes(index)) return;
+
+    const waitTime = elapsed >= delay ? 1200 : delay - elapsed;
+    window.setTimeout(() => {
+      const currentShownSchedule = getSubscribePopupSessionArray(subscribePopupShownScheduleKey);
+      if (currentShownSchedule.includes(index) || isSubscribePopupMailListPage()) return;
+
+      currentShownSchedule.push(index);
+      setSubscribePopupSessionArray(subscribePopupShownScheduleKey, currentShownSchedule);
+      renderSubscribePopup();
+    }, waitTime);
+  });
+}
+
 function rotateQuotes() { const el = document.querySelector('[data-quote-carousel]'); if (!el) return; let i = 0; setInterval(() => { i = (i + 1) % quoteData.length; el.innerHTML = `${quoteData[i].quote}<cite>${quoteData[i].source}</cite>`; }, 4500); }
 function setupNav() { const btn = document.querySelector('.nav-toggle'); const nav = document.querySelector('.nav-links'); if (!btn || !nav) return; btn.addEventListener('click', () => { const open = nav.classList.toggle('open'); btn.setAttribute('aria-expanded', String(open)); btn.textContent = open ? '×' : '☰'; }); }
-document.addEventListener('DOMContentLoaded', () => { setupNav(); renderVideos(); renderMedia(); renderNews(); renderYouTubeVerticalVideos(); rotateQuotes(); });
+document.addEventListener('DOMContentLoaded', () => { setupNav(); renderVideos(); renderMedia(); renderNews(); renderYouTubeVerticalVideos(); rotateQuotes(); setupSubscribePopupSchedule(); });

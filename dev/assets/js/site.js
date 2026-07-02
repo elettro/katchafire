@@ -1,12 +1,12 @@
 // Katchafire static prototype JavaScript. No external libraries.
-const videoData = [
+let videoData = [
   { title: 'Colour Me Life With Kolohe Kai', caption: 'FPO official video entry pending final YouTube URL.', youtubeUrl: 'https://www.youtube.com/', thumbnailUrl: '' },
   { title: 'Revival 2.0 Live Session', caption: 'FPO live performance placeholder.', youtubeUrl: 'https://www.youtube.com/', thumbnailUrl: '' },
   { title: 'Katchafire Interview', caption: 'FPO interview placeholder for future Google Sheet data.', youtubeUrl: 'https://www.youtube.com/', thumbnailUrl: '' },
   { title: 'Global Roots Reggae', caption: 'FPO visual release placeholder.', youtubeUrl: 'https://www.youtube.com/', thumbnailUrl: '' }
 ];
 
-const mediaData = [
+let mediaData = [
   { location: 'scenestr, AUSTRALIA', caption: 'NZ reggae icons Katchafire launch “Revival 2.0,” reimagining their debut album 25 years on.', readMoreUrl: '#', graphicUrl: '' },
   { location: 'scenestr, AUSTRALIA', caption: 'Reggae icons Katchafire return for their annual pilgrimage to Australia with a 12-date tour this November.', readMoreUrl: '#', graphicUrl: '' },
   { location: 'ROADIE MUSIC, BRAZIL', caption: 'Katchafire revives their iconic single in a project that seeks to breathe new life into Revival, their debut album. The song is born through a sharp vocal harmony promoted by a union of falsetto voices.', readMoreUrl: '#', graphicUrl: '' },
@@ -60,6 +60,113 @@ function fpo(label, className = '') { return `<div class="fpo ${className}" role
 function cardLink(url, text) { const external = url.startsWith('http'); return `<a class="btn" href="${url}"${external ? ' target="_blank" rel="noopener"' : ''}>${text}</a>`; }
 function renderVideos() { const grid = document.querySelector('[data-videos-grid]'); if (!grid) return; grid.innerHTML = videoData.map(v => `<article class="media-card">${v.thumbnailUrl ? `<img src="${v.thumbnailUrl}" alt="Thumbnail for ${v.title}">` : fpo('FPO VIDEO', 'fpo-video')}<h2>${v.title}</h2><p>${v.caption}</p>${cardLink(v.youtubeUrl, 'WATCH')}</article>`).join(''); }
 function renderMedia() { const grid = document.querySelector('[data-media-grid]'); if (!grid) return; grid.innerHTML = mediaData.map(m => `<article class="media-card">${m.graphicUrl ? `<img src="${m.graphicUrl}" alt="Press graphic for ${m.location}">` : fpo('FPO IMAGE')}<h2>${m.location}</h2><p>${m.caption}</p>${cardLink(m.readMoreUrl, 'READ MORE')}</article>`).join(''); }
+
+// Google Sheet CMS feed for the Videos and Media pages.
+// Sheet is published to the web (File > Share > Publish to web), so it can be
+// fetched client-side as CSV with no API key and no backend.
+const CMS_SHEET_PUBLISH_ID = '2PACX-1vSjAVgynedOce3UPvJA0JsIHBestkaL9GA50pb0cveXGp4zhiO7Vr6hLkriblY_BTbdD0hvQaMx9_ww';
+const CMS_SHEET_GIDS = { videos: '0', media: '1759883582' };
+
+function cmsSheetCsvUrl(gid) {
+  return `https://docs.google.com/spreadsheets/d/e/${CMS_SHEET_PUBLISH_ID}/pub?gid=${gid}&single=true&output=csv`;
+}
+
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let field = '';
+  let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"' && text[i + 1] === '"') { field += '"'; i++; }
+      else if (c === '"') { inQuotes = false; }
+      else { field += c; }
+    } else if (c === '"') {
+      inQuotes = true;
+    } else if (c === ',') {
+      row.push(field); field = '';
+    } else if (c === '\r') {
+      // skip, \n handles the line break
+    } else if (c === '\n') {
+      row.push(field); field = '';
+      rows.push(row); row = [];
+    } else {
+      field += c;
+    }
+  }
+  if (field.length || row.length) { row.push(field); rows.push(row); }
+  return rows;
+}
+
+function csvToObjects(text) {
+  const rows = parseCsv(text).filter((r) => r.some((cell) => cell.trim() !== ''));
+  if (!rows.length) return [];
+  const headers = rows[0].map((h) => h.trim());
+  return rows.slice(1).map((r) => {
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = (r[i] || '').trim(); });
+    return obj;
+  });
+}
+
+function sortCmsRows(rows) {
+  return rows.map((r, i) => ({ r, i })).sort((a, b) => {
+    const sa = Number(a.r.sort); const sb = Number(b.r.sort);
+    const va = Number.isFinite(sa) ? sa : Infinity;
+    const vb = Number.isFinite(sb) ? sb : Infinity;
+    return va - vb || a.i - b.i;
+  }).map((x) => x.r);
+}
+
+function extractYouTubeId(url) {
+  const match = (url || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{6,})/);
+  return match ? match[1] : '';
+}
+
+async function fetchCmsSheet(gid) {
+  const res = await fetch(cmsSheetCsvUrl(gid));
+  if (!res.ok) throw new Error(`Sheet fetch failed: HTTP ${res.status}`);
+  const rows = csvToObjects(await res.text());
+  return sortCmsRows(rows.filter((r) => r.active.toUpperCase() === 'TRUE' && r.title));
+}
+
+async function loadCmsVideos() {
+  if (!document.querySelector('[data-videos-grid]')) return;
+  try {
+    const rows = await fetchCmsSheet(CMS_SHEET_GIDS.videos);
+    if (!rows.length) return;
+    videoData = rows.map((r) => {
+      const youtubeId = extractYouTubeId(r.video_url);
+      return {
+        title: r.title,
+        caption: r.description,
+        youtubeUrl: r.video_url || r.button_url || 'https://www.youtube.com/@KatchafireOfficial',
+        thumbnailUrl: r.poster_url || (youtubeId ? `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg` : '')
+      };
+    });
+    renderVideos();
+  } catch (error) {
+    console.warn('Katchafire CMS: using built-in video data,', error);
+  }
+}
+
+async function loadCmsMedia() {
+  if (!document.querySelector('[data-media-grid]')) return;
+  try {
+    const rows = await fetchCmsSheet(CMS_SHEET_GIDS.media);
+    if (!rows.length) return;
+    mediaData = rows.map((r) => ({
+      location: r.title,
+      caption: r.description,
+      readMoreUrl: r.button_url || '#',
+      graphicUrl: r.poster_url || ''
+    }));
+    renderMedia();
+  } catch (error) {
+    console.warn('Katchafire CMS: using built-in media data,', error);
+  }
+}
 function renderNews() { const grid = document.querySelector('[data-news-grid]'); if (!grid) return; grid.innerHTML = newsData.map(n => `<article class="media-card">${n.imageUrl ? `<img src="${n.imageUrl}" alt="${n.title}">` : fpo('FPO IMAGE')}<h2>${n.title}</h2><p>${n.caption}</p>${cardLink(n.buttonUrl, n.buttonText)}</article>`).join(''); }
 
 function renderYouTubeVerticalVideos() {
@@ -108,8 +215,13 @@ function renderYouTubeVerticalVideos() {
 // Timers run at 15 seconds, 3 minutes, and 8 minutes after arrival.
 // All clicks route to /dev/mail-list/.
 function getSubscribePopupDevBasePath() {
-  const devPathMatch = window.location.pathname.match(/^(.*?\/dev)(?:\/|$)/);
-  return devPathMatch ? devPathMatch[1] : '/dev';
+  const scriptEl = document.currentScript || document.querySelector('script[src*="assets/js/site.js"]');
+  if (scriptEl) {
+    const scriptPath = new URL(scriptEl.src, window.location.href).pathname;
+    const match = scriptPath.match(/^(.*?)\/assets\/js\/site\.js$/);
+    if (match) return match[1];
+  }
+  return '';
 }
 
 const subscribePopupDevBasePath = getSubscribePopupDevBasePath();
@@ -266,4 +378,4 @@ function setupSubscribePopupSchedule() {
 
 function rotateQuotes() { const el = document.querySelector('[data-quote-carousel]'); if (!el) return; let i = 0; setInterval(() => { i = (i + 1) % quoteData.length; el.innerHTML = `${quoteData[i].quote}<cite>${quoteData[i].source}</cite>`; }, 4500); }
 function setupNav() { const btn = document.querySelector('.nav-toggle'); const nav = document.querySelector('.nav-links'); if (!btn || !nav) return; btn.addEventListener('click', () => { const open = nav.classList.toggle('open'); btn.setAttribute('aria-expanded', String(open)); btn.textContent = open ? '×' : '☰'; }); }
-document.addEventListener('DOMContentLoaded', () => { setupNav(); renderVideos(); renderMedia(); renderNews(); renderYouTubeVerticalVideos(); rotateQuotes(); setupSubscribePopupSchedule(); });
+document.addEventListener('DOMContentLoaded', () => { setupNav(); renderVideos(); renderMedia(); renderNews(); renderYouTubeVerticalVideos(); rotateQuotes(); setupSubscribePopupSchedule(); loadCmsVideos(); loadCmsMedia(); });

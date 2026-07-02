@@ -95,3 +95,8 @@ body{width:100%;max-width:100%;overflow-x:hidden}*,*::before,*::after{box-sizing
     flex: 0 0 auto;
   }
 }
+
+/* Spotify artist embed section */
+.spotify-section{display:grid;grid-template-columns:minmax(0,.85fr) minmax(280px,1.15fr);gap:2rem;align-items:center;background:linear-gradient(135deg,#03150b,#0b2414 58%,#2a070b)}
+.spotify-copy{max-width:560px}.spotify-copy p:last-child{font-size:1.15rem}.spotify-embed{border:1px solid rgba(244,197,66,.36);border-radius:24px;padding:12px;background:rgba(255,255,255,.06);box-shadow:0 25px 80px rgba(0,0,0,.45);overflow:hidden}.spotify-embed iframe{display:block;width:100%;border:0;border-radius:12px}
+@media(max-width:900px){.spotify-section{grid-template-columns:1fr}.spotify-copy{max-width:none}.spotify-embed{padding:8px;border-radius:18px}.spotify-embed iframe{height:420px}}

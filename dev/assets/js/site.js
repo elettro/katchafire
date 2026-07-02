@@ -107,21 +107,27 @@ function renderYouTubeVerticalVideos() {
 // Uses static-safe hardcoded image paths from /dev/assets/subscribe-banners/.
 // Timers run at 15 seconds, 3 minutes, and 8 minutes after arrival.
 // All clicks route to /dev/mail-list/.
+function getSubscribePopupDevBasePath() {
+  const devPathMatch = window.location.pathname.match(/^(.*?\/dev)(?:\/|$)/);
+  return devPathMatch ? devPathMatch[1] : '/dev';
+}
+
+const subscribePopupDevBasePath = getSubscribePopupDevBasePath();
 const subscribeBannerImages = [
-  '/dev/assets/subscribe-banners/katchafire_subscribe_banner_01.jpg',
-  '/dev/assets/subscribe-banners/katchafire_subscribe_banner_02.jpg',
-  '/dev/assets/subscribe-banners/katchafire_subscribe_banner_03.jpg',
-  '/dev/assets/subscribe-banners/katchafire_subscribe_banner_04.jpg',
-  '/dev/assets/subscribe-banners/katchafire_subscribe_banner_05.jpg',
-  '/dev/assets/subscribe-banners/katchafire_subscribe_banner_06.jpg',
-  '/dev/assets/subscribe-banners/katchafire_subscribe_banner_07.jpg',
-  '/dev/assets/subscribe-banners/katchafire_subscribe_banner_08.jpg',
-  '/dev/assets/subscribe-banners/katchafire_subscribe_banner_09.jpg',
-  '/dev/assets/subscribe-banners/katchafire_subscribe_banner_10.jpg'
+  `${subscribePopupDevBasePath}/assets/subscribe-banners/katchafire_subscribe_banner_01.jpg`,
+  `${subscribePopupDevBasePath}/assets/subscribe-banners/katchafire_subscribe_banner_02.jpg`,
+  `${subscribePopupDevBasePath}/assets/subscribe-banners/katchafire_subscribe_banner_03.jpg`,
+  `${subscribePopupDevBasePath}/assets/subscribe-banners/katchafire_subscribe_banner_04.jpg`,
+  `${subscribePopupDevBasePath}/assets/subscribe-banners/katchafire_subscribe_banner_05.jpg`,
+  `${subscribePopupDevBasePath}/assets/subscribe-banners/katchafire_subscribe_banner_06.jpg`,
+  `${subscribePopupDevBasePath}/assets/subscribe-banners/katchafire_subscribe_banner_07.jpg`,
+  `${subscribePopupDevBasePath}/assets/subscribe-banners/katchafire_subscribe_banner_08.jpg`,
+  `${subscribePopupDevBasePath}/assets/subscribe-banners/katchafire_subscribe_banner_09.jpg`,
+  `${subscribePopupDevBasePath}/assets/subscribe-banners/katchafire_subscribe_banner_10.jpg`
 ];
 
 const subscribePopupSchedule = [15000, 180000, 480000];
-const subscribePopupMailListPath = '/dev/mail-list/';
+const subscribePopupMailListPath = `${subscribePopupDevBasePath}/mail-list/`;
 const subscribePopupArrivalKey = 'katchafireSubscribePopupArrival';
 const subscribePopupShownScheduleKey = 'katchafireSubscribePopupShownSchedule';
 const subscribePopupLastBannerKey = 'katchafireSubscribePopupLastBanner';

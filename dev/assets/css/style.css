@@ -218,3 +218,118 @@ body{width:100%;max-width:100%;overflow-x:hidden}*,*::before,*::after{box-sizing
     gap: 6px;
   }
 }
+
+.subscribe-popup-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, .78);
+  backdrop-filter: blur(8px);
+  overflow-x: hidden;
+}
+
+.subscribe-popup-card {
+  position: relative;
+  width: min(920px, 100%);
+  max-width: calc(100vw - 28px);
+  border-radius: 24px;
+  background: #050505;
+  box-shadow: 0 24px 90px rgba(229,9,20,.22), 0 24px 90px rgba(0,0,0,.6);
+  overflow: hidden;
+}
+
+.subscribe-popup-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  width: 38px;
+  height: 38px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(0,0,0,.72);
+  color: #fff;
+  font-size: 1.7rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.subscribe-popup-close:hover,
+.subscribe-popup-close:focus {
+  background: #e50914;
+  outline: 2px solid rgba(255,255,255,.72);
+  outline-offset: 2px;
+}
+
+.subscribe-popup-image-link {
+  display: block;
+  width: 100%;
+}
+
+.subscribe-popup-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  background: #000;
+}
+
+.subscribe-popup-actions {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+  background: #050505;
+}
+
+.subscribe-popup-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: min(320px, 100%);
+  padding: 13px 18px;
+  border-radius: 999px;
+  background: #e50914;
+  color: #fff;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  font-weight: 900;
+}
+
+.subscribe-popup-cta:hover,
+.subscribe-popup-cta:focus {
+  filter: brightness(1.1);
+  outline: 2px solid rgba(255,255,255,.72);
+  outline-offset: 3px;
+}
+
+@media (max-width: 600px) {
+  .subscribe-popup-backdrop {
+    padding: 12px;
+  }
+
+  .subscribe-popup-card {
+    max-width: calc(100vw - 18px);
+    border-radius: 16px;
+  }
+
+  .subscribe-popup-close {
+    width: 34px;
+    height: 34px;
+    font-size: 1.45rem;
+  }
+
+  .subscribe-popup-actions {
+    padding: 12px;
+  }
+
+  .subscribe-popup-cta {
+    width: 100%;
+    font-size: .78rem;
+    letter-spacing: .08em;
+  }
+}

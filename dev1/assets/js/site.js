@@ -26,6 +26,29 @@ const newsData = [
   { imageUrl: '', title: 'Join The Fyah Family', caption: 'Subscribe for music, tour dates, merch drops, videos, and official updates.', buttonText: 'JOIN NOW', buttonUrl: '../mail-list/' }
 ];
 
+
+// YouTube latest Shorts data.
+// Static-site safe mode: update these 3 records with the latest videos from https://www.youtube.com/@KatchafireOfficial/shorts.
+// A true automatic latest-3 feed needs the YouTube Data API or a small backend/proxy.
+// Do not expose a YouTube API key in client-side JavaScript.
+const youtubeVerticalVideosData = [
+  {
+    title: 'Katchafire YouTube Short 1',
+    videoId: 'REPLACE_WITH_VIDEO_ID_1',
+    youtubeUrl: 'https://www.youtube.com/watch?v=REPLACE_WITH_VIDEO_ID_1'
+  },
+  {
+    title: 'Katchafire YouTube Short 2',
+    videoId: 'REPLACE_WITH_VIDEO_ID_2',
+    youtubeUrl: 'https://www.youtube.com/watch?v=REPLACE_WITH_VIDEO_ID_2'
+  },
+  {
+    title: 'Katchafire YouTube Short 3',
+    videoId: 'REPLACE_WITH_VIDEO_ID_3',
+    youtubeUrl: 'https://www.youtube.com/watch?v=REPLACE_WITH_VIDEO_ID_3'
+  }
+];
+
 const quoteData = [
   { quote: '“...One of the most cherished, original live reggae bands in the world.”', source: '— The Brag mag' },
   { quote: '“They transformed the place into a freedom-founded club where the only rule was to enjoy the music. No external force could stop the fire!”', source: '— KDHX 88.1 USA' },
@@ -38,6 +61,46 @@ function cardLink(url, text) { const external = url.startsWith('http'); return `
 function renderVideos() { const grid = document.querySelector('[data-videos-grid]'); if (!grid) return; grid.innerHTML = videoData.map(v => `<article class="media-card">${v.thumbnailUrl ? `<img src="${v.thumbnailUrl}" alt="Thumbnail for ${v.title}">` : fpo('FPO VIDEO', 'fpo-video')}<h2>${v.title}</h2><p>${v.caption}</p>${cardLink(v.youtubeUrl, 'WATCH')}</article>`).join(''); }
 function renderMedia() { const grid = document.querySelector('[data-media-grid]'); if (!grid) return; grid.innerHTML = mediaData.map(m => `<article class="media-card">${m.graphicUrl ? `<img src="${m.graphicUrl}" alt="Press graphic for ${m.location}">` : fpo('FPO IMAGE')}<h2>${m.location}</h2><p>${m.caption}</p>${cardLink(m.readMoreUrl, 'READ MORE')}</article>`).join(''); }
 function renderNews() { const grid = document.querySelector('[data-news-grid]'); if (!grid) return; grid.innerHTML = newsData.map(n => `<article class="media-card">${n.imageUrl ? `<img src="${n.imageUrl}" alt="${n.title}">` : fpo('FPO IMAGE')}<h2>${n.title}</h2><p>${n.caption}</p>${cardLink(n.buttonUrl, n.buttonText)}</article>`).join(''); }
+
+function renderYouTubeVerticalVideos() {
+  const grid = document.querySelector('[data-youtube-vertical-grid]');
+  if (!grid || !Array.isArray(youtubeVerticalVideosData)) return;
+
+  const videos = youtubeVerticalVideosData.slice(0, 3);
+
+  grid.innerHTML = videos.map((item) => {
+    const title = item.title || 'Katchafire YouTube Video';
+    const videoId = item.videoId || '';
+    const youtubeUrl = item.youtubeUrl || 'https://www.youtube.com/@KatchafireOfficial';
+
+    if (!videoId || videoId.includes('REPLACE_WITH')) {
+      return `
+        <article class="youtube-vertical-card">
+          <div class="youtube-vertical-embed fpo" aria-label="${title}">
+            <span>FPO YOUTUBE SHORT</span>
+          </div>
+          <a class="youtube-watch-btn" href="${youtubeUrl}" target="_blank" rel="noopener">WATCH ON YOUTUBE</a>
+        </article>
+      `;
+    }
+
+    return `
+      <article class="youtube-vertical-card">
+        <div class="youtube-vertical-embed">
+          <iframe
+            src="https://www.youtube.com/embed/${videoId}"
+            title="${title}"
+            loading="lazy"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen>
+          </iframe>
+        </div>
+        <a class="youtube-watch-btn" href="${youtubeUrl}" target="_blank" rel="noopener">WATCH ON YOUTUBE</a>
+      </article>
+    `;
+  }).join('');
+}
+
 function rotateQuotes() { const el = document.querySelector('[data-quote-carousel]'); if (!el) return; let i = 0; setInterval(() => { i = (i + 1) % quoteData.length; el.innerHTML = `${quoteData[i].quote}<cite>${quoteData[i].source}</cite>`; }, 4500); }
 function setupNav() { const btn = document.querySelector('.nav-toggle'); const nav = document.querySelector('.nav-links'); if (!btn || !nav) return; btn.addEventListener('click', () => { const open = nav.classList.toggle('open'); btn.setAttribute('aria-expanded', String(open)); btn.textContent = open ? '×' : '☰'; }); }
-document.addEventListener('DOMContentLoaded', () => { setupNav(); renderVideos(); renderMedia(); renderNews(); rotateQuotes(); });
+document.addEventListener('DOMContentLoaded', () => { setupNav(); renderVideos(); renderMedia(); renderNews(); renderYouTubeVerticalVideos(); rotateQuotes(); });

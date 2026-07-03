@@ -352,3 +352,257 @@ body{width:100%;max-width:100%;overflow-x:hidden}*,*::before,*::after{box-sizing
     grid-template-columns: 1fr;
   }
 }
+
+/* Bio page: photo hero, tighter section rhythm, image interstitials */
+.bio-page section {
+  padding: 3.5rem 6vw;
+}
+
+.bio-page section + section {
+  padding-top: 0;
+}
+
+.bio-hero {
+  position: relative;
+  min-height: 62vh;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 3.5rem 6vw;
+  background:
+    linear-gradient(180deg, rgba(3,6,4,.55), rgba(3,6,4,.92)),
+    url("../img/bio/hero.jpg") center 25% / cover no-repeat;
+}
+
+.bio-hero-copy {
+  position: relative;
+  max-width: 900px;
+  text-shadow: 0 10px 30px #000;
+}
+
+.bio-hero h1 {
+  margin: 0;
+}
+
+.bio-hero .lede {
+  font-size: clamp(1.05rem, 1.6vw, 1.35rem);
+  max-width: 62ch;
+  margin: 1.2rem auto 0;
+  line-height: 1.6;
+}
+
+.story-grid {
+  align-items: start;
+}
+
+.story-media {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.story-media img {
+  width: 100%;
+  display: block;
+  border: 1px solid rgba(244,197,66,.52);
+  border-radius: 24px;
+  box-shadow: 0 25px 80px rgba(0,0,0,.45);
+  object-fit: cover;
+}
+
+.story-media img.wide {
+  aspect-ratio: 16/10;
+}
+
+.story-media img.tall {
+  aspect-ratio: 4/5;
+}
+
+.photo-banner {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.photo-banner figure {
+  margin: 0;
+}
+
+.photo-banner img {
+  width: 100%;
+  max-height: 460px;
+  object-fit: cover;
+  display: block;
+  border: 1px solid rgba(244,197,66,.52);
+  border-radius: 24px;
+  box-shadow: 0 25px 80px rgba(0,0,0,.45);
+}
+
+.photo-banner figcaption {
+  margin-top: .6rem;
+  font-size: .75rem;
+  letter-spacing: .05em;
+  color: rgba(255,255,255,.55);
+  text-align: right;
+}
+
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+}
+
+.two-col h2 {
+  margin-top: 0;
+}
+
+@media (max-width: 900px) {
+  .story-grid,
+  .two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .bio-hero {
+    min-height: 46vh;
+  }
+}
+
+.two-col .column-list {
+  columns: 1;
+}
+
+.quote-grid {
+  grid-template-columns: repeat(2, 1fr);
+  align-items: start;
+}
+
+@media (max-width: 760px) {
+  .quote-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Mail-list page: punchy title, icon perk cards, copy block */
+.fyah-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .6rem;
+  text-align: center;
+}
+
+.cta-pill {
+  display: inline-block;
+  background: #b51622;
+  border: 1px solid #f4c542;
+  color: #fff;
+  font-family: 'Bebas Neue', 'Oswald', sans-serif;
+  font-weight: 700;
+  letter-spacing: .16em;
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  padding: .45rem 1.4rem;
+  border-radius: 999px;
+}
+
+.fyah-block {
+  margin: 0;
+  font-size: clamp(2.6rem, 8vw, 6.5rem);
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .fyah-block {
+    white-space: normal;
+  }
+}
+
+.perk-grid {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.perk-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: center;
+  min-height: 0;
+  gap: .6rem;
+  padding: 2rem 1.3rem 1.6rem;
+  border-top-width: 3px;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.perk-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 45px rgba(0,0,0,.4);
+}
+
+.perk-card h2 {
+  font-size: 1.15rem;
+  letter-spacing: .04em;
+  line-height: 1.25;
+  margin: 0;
+  overflow-wrap: normal;
+  word-break: normal;
+  hyphens: none;
+}
+
+.perk-card p {
+  font-size: .85rem;
+  color: rgba(255,255,255,.65);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.perk-icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+}
+
+.perk-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
+.perk-gold {
+  border-top-color: #f4c542;
+}
+
+.perk-gold .perk-icon {
+  color: #f4c542;
+}
+
+.perk-green {
+  border-top-color: #1a8f4c;
+}
+
+.perk-green .perk-icon {
+  color: #2fbf71;
+}
+
+.perk-red {
+  border-top-color: #b51622;
+}
+
+.perk-red .perk-icon {
+  color: #e5495c;
+}
+
+.mail-copy {
+  max-width: 72ch;
+  margin: 2rem auto 0;
+}
+
+.mail-copy p {
+  margin: 0 0 1.1rem;
+}
+
+.mail-copy p:last-child {
+  margin-bottom: 0;
+}

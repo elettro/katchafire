@@ -504,28 +504,12 @@ body{width:100%;max-width:100%;overflow-x:hidden}*,*::before,*::after{box-sizing
 
 .perk-grid {
   grid-template-columns: repeat(3, 1fr);
-  align-items: start;
 }
 
 @media (max-width: 760px) {
   .perk-grid {
     grid-template-columns: 1fr;
   }
-}
-
-.perk-art {
-  padding: 0;
-  overflow: hidden;
-  min-height: 0;
-  position: relative;
-  aspect-ratio: 4 / 3;
-}
-
-.perk-art img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
 }
 
 .perk-card {
